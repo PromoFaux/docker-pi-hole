@@ -17,15 +17,15 @@ jobs:
       fail-fast: false
       matrix:
         registry: [dockerhub, ghcr]
-        platform: [linux/amd64, linux/386, linux/arm/v6, linux/arm/v7, linux/arm64]
+        platform: [linux/amd64, linux/386 ] #, linux/arm/v6, linux/arm/v7, linux/arm64]
         alpine_version: [3.19]
-        include:
-          - registry: dockerhub
-            platform: linux/riscv64
-            alpine_version: edge
-          - registry: ghcr
-            platform: linux/riscv64
-            alpine_version: edge
+        # include:
+        #   - registry: dockerhub
+        #     platform: linux/riscv64
+        #     alpine_version: edge
+        #   - registry: ghcr
+        #     platform: linux/riscv64
+        #     alpine_version: edge
     steps:
       - name: Prepare name for digest up/downloads
         run: |
@@ -52,7 +52,7 @@ jobs:
         with:
           docker_username: ${{ secrets.DOCKERHUB_USER }}
           docker_password: ${{ secrets.DOCKERHUB_PASS }}
-          ghcr_username: ${{ github.repository_owner }}
+          ghcr_username: promofaux
           ghcr_password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
