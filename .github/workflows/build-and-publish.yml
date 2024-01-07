@@ -27,7 +27,7 @@ jobs:
             platform: linux/riscv64
             alpine_version: edge
     steps:
-      - name: Prepare name for digest up/download
+      - name: Prepare name for digest up/downloads
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
