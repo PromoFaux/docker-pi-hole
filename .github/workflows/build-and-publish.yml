@@ -16,16 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # registry: [dockerhub, ghcr]
-        platform: [linux/amd64, linux/386 ] #, linux/arm/v6, linux/arm/v7, linux/arm64]
+        platform: [linux/amd64, linux/386 , linux/arm/v6, linux/arm/v7, linux/arm64]
         alpine_version: [3.19]
-        # include:
-        #   - registry: dockerhub
-        #     platform: linux/riscv64
-        #     alpine_version: edge
-        #   - registry: ghcr
-        #     platform: linux/riscv64
-        #     alpine_version: edge
+        include:
+          - registry: dockerhub
+            platform: linux/riscv64
+            alpine_version: edge
+          - registry: ghcr
+            platform: linux/riscv64
+            alpine_version: edge
     steps:
       - name: Prepare name for digest up/downloads
         run: |
@@ -78,14 +77,14 @@ jobs:
 
       - name: Export digests
         run: |
-          mkdir -p /tmp/digests/${{ matrix.registry }}
+          mkdir -p /tmp/digests
           digest_docker="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${{ matrix.registry }}/${digest_docker#sha256:}"
+          touch "/tmp/digests/${digest_docker#sha256:}"
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.registry }}-${{ env.PLATFORM_PAIR }}
+          name: digests-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -94,10 +93,6 @@ jobs:
   # If we would push immediately above, the individual runners would overwrite each other's images
   # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
   merge-and-deploy:
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     registry: [dockerhub, ghcr]
     runs-on: ubuntu-latest
     needs:
       - build
@@ -108,8 +103,8 @@ jobs:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
-          path: /tmp/digests #/${{ matrix.registry }}
-          pattern: digests-* #${{ matrix.registry }}-*
+          path: /tmp/digests
+          pattern: digests-*
           merge-multiple: true
       
       - name: Set up Docker Buildx
@@ -136,26 +131,29 @@ jobs:
           tags: |
             development-v6
 
-      - name: Create manifest list and push (docker hub)
-        working-directory: /tmp/digests/${{ matrix.registry }}
+      - name: Create manifest list and push (docker hub + ghcr)
+        working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.dockerhub }}@sha256:%s ' *)
-
-      - name: Inspect image
-        run: |
-          docker buildx imagetools inspect ${{ env.dockerhub }}:${{ steps.meta.outputs.version }}
-      
-      - name: Create manifest list and push (ghcr)
-        working-directory: /tmp/digests/${{ matrix.registry }}
-        run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.ghcr }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
+          docker buildx imagetools inspect ${{ env.dockerhub }}:${{ steps.meta.outputs.version }}
           docker buildx imagetools inspect ${{ env.ghcr }}:${{ steps.meta.outputs.version }}
+      
+      # - name: Create manifest list and push (ghcr)
+      #   working-directory: /tmp/digests
+      #   run: |
+      #     docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+      #       $(printf '${{ env.ghcr }}@sha256:%s ' *)
 
-      - name: blah
-        run: |
-          docker images
+      # - name: Inspect image
+      #   run: |
+      #     docker buildx imagetools inspect ${{ env.ghcr }}:${{ steps.meta.outputs.version }}
+
+      # - name: blah
+      #   run: |
+      #     docker images
