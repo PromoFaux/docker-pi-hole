@@ -19,12 +19,9 @@ jobs:
         platform: [linux/amd64, linux/386 , linux/arm/v6, linux/arm/v7, linux/arm64]
         alpine_version: [3.19]
         include:
-          - registry: dockerhub
             platform: linux/riscv64
             alpine_version: edge
-          - registry: ghcr
-            platform: linux/riscv64
-            alpine_version: edge
+          
     steps:
       - name: Prepare name for digest up/downloads
         run: |
