@@ -71,7 +71,7 @@ jobs:
             alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=foo/bar,push=false,push-by-digest=true,name-canonical=true,push=true
+            type=image,name=foo/bar,push-by-digest=true,name-canonical=true,push=false
 
       - name: Export digests
         run: |
