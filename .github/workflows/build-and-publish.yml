@@ -16,11 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/386 , linux/arm/v6, linux/arm/v7, linux/arm64]
+        platform: [linux/amd64, linux/386] # , linux/arm/v6, linux/arm/v7, linux/arm64]
         alpine_version: [3.19]
-        include:
-          - platform: linux/riscv64
-            alpine_version: edge
+        # include:
+        #   - platform: linux/riscv64
+        #     alpine_version: edge
           
     steps:
       - name: Prepare name for digest up/downloads
@@ -44,13 +44,13 @@ jobs:
           tags: |
             development-v6
 
-      - name: Login to DockerHub and GitHub Container Registry
-        uses: ./.github/actions/login-repo
-        with:
-          docker_username: ${{ secrets.DOCKERHUB_USER }}
-          docker_password: ${{ secrets.DOCKERHUB_PASS }}
-          ghcr_username: ${{ github.repository_owner }}
-          ghcr_password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Login to DockerHub and GitHub Container Registry
+      #   uses: ./.github/actions/login-repo
+      #   with:
+      #     docker_username: ${{ secrets.DOCKERHUB_USER }}
+      #     docker_password: ${{ secrets.DOCKERHUB_PASS }}
+      #     ghcr_username: ${{ github.repository_owner }}
+      #     ghcr_password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -71,7 +71,7 @@ jobs:
             alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
+            type=image,name=foo/bar,push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digests
         run: |
