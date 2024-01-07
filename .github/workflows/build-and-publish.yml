@@ -31,18 +31,18 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: |
-            ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
-            ghcr.io/promofaux/pihole
-          flavor: |
-            latest=false
-          tags: |
-            development-v6
+      # - name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     images: |
+      #       ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole
+      #       ghcr.io/promofaux/pihole
+      #     flavor: |
+      #       latest=false
+      #     tags: |
+      #       development-v6
 
       # - name: Login to DockerHub and GitHub Container Registry
       #   uses: ./.github/actions/login-repo
@@ -71,7 +71,7 @@ jobs:
             alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=foo/bar,push-by-digest=true,name-canonical=true,push=false
+            type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=false
 
       - name: Export digests
         run: |
