@@ -74,7 +74,7 @@ jobs:
             alpine_version=${{ matrix.alpine_version }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
-            type=image,name=tmpimage,push-by-digest=true,name-canonical=true,push=true
+            type=image,name=${{ env.dockerhub }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digests
         run: |
@@ -140,18 +140,12 @@ jobs:
         working-directory: /tmp/digests/${{ matrix.registry }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ secrets.DOCKERHUB_NAMESPACE }}/pihole@sha256:%s ' *)
+            $(printf '${{ env.dockerhub }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_NAMESPACE }}/pihole:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.dockerhub }}:${{ steps.meta.outputs.version }}
 
-      - name: Create manifest list and push (ghcr)
-        working-directory: /tmp/digests/${{ matrix.registry }}
+      - name: blah
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/promofaux/pihole@sha256:%s ' *)
-
-      - name: Inspect image
-        run: |
-          docker buildx imagetools inspect ghcr.io/promofaux/pihole:${{ steps.meta.outputs.version }}
+          docker images
